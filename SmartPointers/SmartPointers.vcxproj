@@ -127,12 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SharedPointer.cpp" />
     <ClCompile Include="SmartPointers.cpp" />
-    <ClCompile Include="UniquePointer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SharedPointer.h" />
+    <ClInclude Include="SmartPointer.h" />
     <ClInclude Include="UniquePointer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

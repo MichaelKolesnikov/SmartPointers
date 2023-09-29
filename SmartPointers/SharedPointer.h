@@ -1,118 +1,110 @@
 #pragma once
-#include <utility>
+#include "UniquePointer.h"
 
-template <typename T>
-class SharedPointer final {
+template <class T>
+class SharedPointer
+{
 private:
-	T* Pointer;
-	int* CountRef;
+    UniquePointer<T>* pointerToUniquePointer;
+    int* CountRef;
+
+    explicit SharedPointer(UniquePointer<T>&& pointer)
+    {
+        pointerToUniquePointer = &NewUniquePointer<T>(*pointer);
+        CountRef = new int(0);
+    }
 
 public:
-	SharedPointer() : Pointer(nullptr), CountRef(nullptr) {}
-	explicit SharedPointer(T*& pointer) : CountRef(new int(1))
-	{
-		Pointer = pointer;
-		pointer = nullptr;
-	}
-	explicit SharedPointer(T*&& pointer) : CountRef(new int(1))
-	{
-		Pointer = std::move(pointer);
-	}
+    template <class T>
+    friend SharedPointer<T> NewSharedPointer(const T&& element);
 
-	~SharedPointer() {
-		Reset();
-	}
-	SharedPointer(const SharedPointer<T>& other) : Pointer(other.Pointer), CountRef(other.CountRef)
-	{
-		if (CountRef) {
-			(*CountRef)++;
-		}
-	}
-	SharedPointer<T>& operator=(const SharedPointer<T>& other)
-	{
-		if (this != &other) {
-			Reset();
-			Pointer = other.Pointer;
-			CountRef = other.CountRef;
+    template <class T>
+    friend SharedPointer<T> NewSharedPointer(const T& element);
 
-			if (CountRef) {
-				(*CountRef)++;
-			}
-		}
-		return *this;
-	}
-	SharedPointer(SharedPointer<T>&& other) noexcept : Pointer(other.Pointer), CountRef(other.CountRef)
-	{
-		other.Pointer = nullptr;
-		other.CountRef = nullptr;
-	}
-	SharedPointer<T>& operator=(SharedPointer<T>&& other)
-	{
-		if (this != &other) {
-			Reset();
+    ~SharedPointer() 
+    {
+        Reset();
+    }
+    SharedPointer(const SharedPointer& other) : pointerToUniquePointer(other.pointerToUniquePointer), CountRef(other.CountRef)
+    {
+        if (CountRef) {
+            (*CountRef)++;
+        }
+    }
+    SharedPointer& operator=(const SharedPointer& other)
+    {
+        if (this != &other) 
+        {
+            Reset();
+            pointerToUniquePointer = other.pointerToUniquePointer;
+            CountRef = other.CountRef;
 
-			Pointer = other.Pointer;
-			CountRef = other.CountRef;
+            if (CountRef) 
+            {
+                (*CountRef)++;
+            }
+        }
+        return *this;
+    }
+    SharedPointer(SharedPointer&& other) : pointerToUniquePointer(other.pointerToUniquePointer), CountRef(other.CountRef)
+    {
+        other.pointerToUniquePointer = nullptr;
+        other.CountRef = nullptr;
+    }
+    SharedPointer& operator=(SharedPointer&& other)
+    {
+        if (pointerToUniquePointer != other.pointerToUniquePointer)
+        {
+            Reset();
+            pointerToUniquePointer = other.pointerToUniquePointer;
+            *CountRef = other.CountRef;
+            other.CountRef = nullptr;
+            other.pointerToUniquePointer = nullptr;
+        }
+        return *this;
+    }
 
-			other.Pointer = nullptr;
-			other.CountRef = nullptr;
-		}
-		return *this;
-	}
+    T& operator*() const {
+        return *(*pointerToUniquePointer);
+    }
 
-	T& operator*() const
-	{
-		return *Pointer;
-	}
+    operator bool()
+    {
+        return pointerToUniquePointer;
+    }
 
-	operator bool()
-	{
-		return CountRef && CountRef > 0;
-	}
+    void Reset()
+    {
+        if (CountRef) 
+        {
+            (*CountRef)--;
 
-	int UseCount() const
-	{
-		return (CountRef ? *CountRef : 0);
-	}
+            if (*CountRef == 0)
+            {
+                delete pointerToUniquePointer;
+                delete CountRef;
+                pointerToUniquePointer = nullptr;
+                CountRef = nullptr;
+            }
+        }
+    }
 
-	void Reset()
-	{
-		if (CountRef) {
-			(*CountRef)--;
-
-			if (*CountRef == 0)
-			{
-				delete Pointer;
-				delete CountRef;
-				Pointer = nullptr;
-				CountRef = nullptr;
-			}
-		}
-	}
-
-	bool Unique() const
-	{
-		if (CountRef)
-		{
-			return *CountRef == 1;
-		}
-		return false;
-	}
-
-	void Swap(SharedPointer<T>& other)
-	{
-		T* tmp1 = Pointer;
-		Pointer = other.Pointer;
-		other.Pointer = tmp1;
-		int* tmp2 = CountRef;
-		CountRef = other.CountRef;
-		other.CountRef = tmp2;
-	}
+    void Swap(SharedPointer<T>& other)
+    {
+        uniquePointer.Swap(other.uniquePointer);
+    }
 };
 
 template <class T>
-SharedPointer<T> NewSharedPointer(T element = T())
+SharedPointer<T> NewSharedPointer(const T&& element = T())
 {
-	SharedPointer<T> newSharedPointer(new T(element));
-	return newSharedPointer;
+    return SharedPointer<T>(NewUniquePointer(element));
 }
+
+template <class T>
+SharedPointer<T> NewSharedPointer(const T& element)
+{
+    return SharedPointer<T>(NewUniquePointer(element));
+}
+
+

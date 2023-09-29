@@ -18,18 +18,15 @@
     <ClCompile Include="SmartPointers.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="SharedPointer.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="UniquePointer.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SharedPointer.h">
+    <ClInclude Include="SmartPointer.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="UniquePointer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedPointer.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

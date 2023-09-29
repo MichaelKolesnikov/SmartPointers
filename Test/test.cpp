@@ -1,27 +1,78 @@
 #include "pch.h"
 #include "..//SmartPointers/UniquePointer.h"
-#include "..//SmartPointers/SharedPointer.h"
+#include "..//SmartPointers//SharedPointer.h"
+#include "..//SmartPointers/SmartPointer.h"
+
+#include <vector>
+
+using namespace std;
 
 template <class T>
-void ChangeSharedPointer(SharedPointer<T> sharedPointer, T newValue)
+void ChangeSmartPointer(SmartPointer<T> pointer, T newValue)
 {
-	*sharedPointer = newValue;
+	*pointer = newValue;
 }
 
+class HardClass
+{
+private:
+	vector<int> v;
+public:
+	HardClass()
+	{
+		v.resize(1000000);
+	}
+
+	int GetFirst()
+	{
+		return v[0];
+	}
+};
+
 TEST(UniquePointer, UniquePointer) {
-	int value = 15, newValue = 9;
-	int* simplePointer = new int(value);
-	UniquePointer<int> uniquePointer(simplePointer);
-	EXPECT_TRUE(simplePointer == nullptr);
-	*uniquePointer = newValue;
-	EXPECT_EQ(*uniquePointer, newValue);
+	// memory release check
+	for (int i = 0; i < 1e3; ++i)
+	{
+		auto newPointer = NewUniquePointer(HardClass());
+	}
+
+	for (int i = 0; i < 1e4; ++i)
+	{
+		auto ptr = NewUniquePointer(rand());
+		int newValue = rand();
+		*ptr = newValue;
+		EXPECT_EQ(*ptr, newValue);
+	}
 }
 
 TEST(SharedPointer, SharedPointer) {
-	int value = 15, newValue = 9;
-	int* simplePointer = new int(value);
-	SharedPointer<int> sharedPointer(simplePointer);
-	EXPECT_TRUE(simplePointer == nullptr);
-	ChangeSharedPointer<int>(sharedPointer, newValue);
-	EXPECT_EQ(*sharedPointer, newValue);
+	// memory release check
+	for (int i = 0; i < 1e3; ++i)
+	{
+		auto ptr = NewSharedPointer<HardClass>(HardClass());
+	}
+
+	for (int i = 0; i < 1e4; ++i)
+	{
+		auto ptr = NewSharedPointer(rand());
+		int newValue = rand();
+		*ptr = newValue;
+		EXPECT_EQ(*ptr, newValue);
+	}
+}
+
+TEST(SmartPointer, SmartPointer) {
+	// memory release check
+	for (int i = 0; i < 1e3; ++i)
+	{
+		auto newPointer = NewSmartPointer(HardClass());
+	}
+
+	for (int i = 0; i < 1e4; ++i)
+	{
+		auto ptr = NewSmartPointer(rand());
+		int newValue = rand();
+		ChangeSmartPointer(ptr, newValue);
+		EXPECT_EQ(*ptr, newValue);
+	}
 }

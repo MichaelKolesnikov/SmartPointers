@@ -4,16 +4,22 @@ template <typename T>
 class UniquePointer final {
 private:
     T* Pointer;
-public:
+
     explicit UniquePointer(T*& pointer) 
     {
         Pointer = pointer;
         pointer = nullptr;
     }
-    explicit UniquePointer(T*&& pointer)
+    explicit UniquePointer(T*&& pointer) // UniquePointer(new int(8))
     {
         Pointer = std::move(pointer);
     }
+
+public:
+    template <class T>
+    friend UniquePointer<T> NewUniquePointer(const T&& element);
+    template <class T>
+    friend UniquePointer<T> NewUniquePointer(const T& element);
 
     ~UniquePointer() {
         delete Pointer;
@@ -51,8 +57,13 @@ public:
 };
 
 template <class T>
-UniquePointer<T> NewUniquePointer(T element = T())
+UniquePointer<T> NewUniquePointer(const T&& element = T())
 {
-    UniquePointer<T> newUniquePointer(new T(element));
-    return newUniquePointer;
+    return UniquePointer<T>(new T(element));
+}
+
+template <class T>
+UniquePointer<T> NewUniquePointer(const T& element)
+{
+    return UniquePointer<T>(new T(element));
 }
